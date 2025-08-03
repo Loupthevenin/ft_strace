@@ -1,25 +1,6 @@
 #include "../includes/ft_strace.h"
 
-void	fork_command(t_args *args)
-{
-	pid_t	child_pid;
-
-	(void)args;
-	child_pid = fork();
-	if (child_pid == -1)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	if (child_pid == 0)
-	{
-	}
-	else
-	{
-	}
-}
-
-t_args	parse_args(int argc, char **argv)
+static t_args	parse_args(int argc, char **argv)
 {
 	t_args	result;
 	int		i;
@@ -47,11 +28,44 @@ t_args	parse_args(int argc, char **argv)
 	return (result);
 }
 
+static void	exec_cmd(t_args *args)
+{
+	if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != -1)
+	{
+		perror("ptrace(TRACEME)");
+		clean(args);
+		exit(EXIT_FAILURE);
+	}
+	// Met en pause le child (il attend le tracer);
+	kill(getpid(), SIGSTOP);
+	execvp(args->path_bin, args->argv_exec);
+	perror("execvp");
+	clean(args);
+	exit(EXIT_FAILURE);
+}
+
+void	fork_command(t_args *args)
+{
+	pid_t	child_pid;
+
+	child_pid = fork();
+	if (child_pid == -1)
+	{
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
+	if (child_pid == 0)
+		exec_cmd(args);
+	else
+		tracer(child_pid, args);
+}
+
 int	main(int argc, char **argv)
 {
 	t_args	args;
 
 	args = parse_args(argc, argv);
 	fork_command(&args);
+	clean(&args);
 	return (0);
 }

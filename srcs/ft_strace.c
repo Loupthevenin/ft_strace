@@ -30,7 +30,7 @@ static t_args	parse_args(int argc, char **argv)
 
 static void	exec_cmd(t_args *args)
 {
-	if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != -1)
+	if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1)
 	{
 		perror("ptrace(TRACEME)");
 		clean(args);

@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/04 10:59:37 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/04 11:34:25 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,8 +39,14 @@ RM = rm -rf
 DEBUG_FLAGS = -g3
 
 # C program
-SRCS = $(shell find $(SRC_DIR) -name '*.c')
-OBJS = $(patsubst $(SRC_DIR)%.c, $(OBJ_DIR)%.o, $(SRCS))
+SRCS = $(SRC_DIR)ft_strace.c \
+	   $(SRC_DIR)utils.c \
+	   $(SRC_DIR)tracer.c \
+	   $(SRC_DIR)syscall_names.c
+OBJS = $(OBJ_DIR)ft_strace.o \
+	   $(OBJ_DIR)utils.o \
+	   $(OBJ_DIR)tracer.o \
+	   $(OBJ_DIR)syscall_names.o
 
 # Recipe
 all: $(NAME)
@@ -48,13 +54,15 @@ all: $(NAME)
 $(OUT_C) $(OUT_H): $(SYS_SCRIPT)
 	./$(SYS_SCRIPT)
 
-$(NAME): $(OUT_C) $(OUT_H) $(OBJS)
+objs/syscall_names.o: $(OUT_C) $(OUT_H)
+
+$(NAME): $(OBJS)
 	@printf "$(_END)\nCompiled source files\n"
 	@$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) -o $@
 	@printf "$(_GREEN)Finish compiling $(NAME)!\n"
 	@printf "Try \"./$(NAME)\" to use$(_END)\n"
 
-$(OBJ_DIR)%.o: $(OUT_C) $(OUT_H) $(SRC_DIR)%.c
+$(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	@printf "$(_GREEN)█$(_END)"

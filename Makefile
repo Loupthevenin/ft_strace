@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/03 10:47:20 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/04 10:10:04 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,6 +25,10 @@ NAME = ft_strace
 SRC_DIR = srcs/
 OBJ_DIR = objs/
 
+SYS_SCRIPT = generate_syscall_table.sh
+OUT_C = srcs/syscall_names.c
+OUT_H = includes/syscall_names.h
+
 # Config
 SHELL = /bin/bash
 CC = gcc
@@ -41,7 +45,10 @@ OBJS = $(patsubst $(SRC_DIR)%.c, $(OBJ_DIR)%.o, $(SRCS))
 # Recipe
 all: $(NAME)
 
-$(NAME): $(OBJS)
+$(OUT_C) $(OUT_H): $(SYS_SCRIPT)
+	./$(SYS_SCRIPT)
+
+$(NAME): $(OUT_C) $(OUT_H) $(OBJS)
 	@printf "$(_END)\nCompiled source files\n"
 	@$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) -o $@
 	@printf "$(_GREEN)Finish compiling $(NAME)!\n"

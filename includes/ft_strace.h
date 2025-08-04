@@ -3,6 +3,7 @@
 
 # include "syscall_names.h"
 # include <elf.h>
+# include <fcntl.h>
 # include <signal.h>
 # include <stdint.h>
 # include <stdio.h>
@@ -26,6 +27,7 @@ typedef struct s_args
 void		tracer(pid_t child_pid, t_args *args);
 
 // Utils
+int			get_max_syscall(const char **syscalls);
 void		clean(t_args *args);
 
 #endif

@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/04 11:34:25 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/04 11:37:40 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,7 +49,7 @@ OBJS = $(OBJ_DIR)ft_strace.o \
 	   $(OBJ_DIR)syscall_names.o
 
 # Recipe
-all: $(NAME)
+all: $(OUT_C) $(OUT_H) $(NAME)
 
 $(OUT_C) $(OUT_H): $(SYS_SCRIPT)
 	./$(SYS_SCRIPT)

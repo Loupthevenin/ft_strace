@@ -44,7 +44,6 @@ syscalls_32=($(extract_syscalls "$FILE_32"))
 	for name in "${syscalls_64[@]}"; do
 		echo "        \"$name\","
 	done
-	echo "        NULL"
 	echo "    };"
 	echo "    return syscall_names_64;"
 	echo "}"
@@ -57,7 +56,6 @@ syscalls_32=($(extract_syscalls "$FILE_32"))
 	for name in "${syscalls_32[@]}"; do
 		echo "        \"$name\","
 	done
-	echo "        NULL"
 	echo "    };"
 	echo "    return syscall_names_32;"
 	echo "}"

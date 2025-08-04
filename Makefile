@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/04 10:10:04 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/04 10:55:50 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,14 +54,14 @@ $(NAME): $(OUT_C) $(OUT_H) $(OBJS)
 	@printf "$(_GREEN)Finish compiling $(NAME)!\n"
 	@printf "Try \"./$(NAME)\" to use$(_END)\n"
 
-$(OBJ_DIR)%.o: $(SRC_DIR)%.c
+$(OBJ_DIR)%.o: $(OUT_C) $(OUT_H) $(SRC_DIR)%.c
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	@printf "$(_GREEN)█$(_END)"
 
 clean:
 	@printf "$(_YELLOW)Removing object files ...$(_END)\n"
-	@$(RM) $(OBJ_DIR)
+	@$(RM) $(OBJ_DIR) $(OUT_C) $(OUT_H)
 
 fclean:
 	@printf "$(_RED)Removing object files and program ...$(_END)\n"

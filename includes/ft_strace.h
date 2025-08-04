@@ -1,6 +1,7 @@
 #ifndef FT_STRACE_H
 # define FT_STRACE_H
 
+# include "syscall_names.h"
 # include <elf.h>
 # include <signal.h>
 # include <stdint.h>

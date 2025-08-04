@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/04 10:55:50 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/04 10:59:37 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -61,11 +61,11 @@ $(OBJ_DIR)%.o: $(OUT_C) $(OUT_H) $(SRC_DIR)%.c
 
 clean:
 	@printf "$(_YELLOW)Removing object files ...$(_END)\n"
-	@$(RM) $(OBJ_DIR) $(OUT_C) $(OUT_H)
+	@$(RM) $(OBJ_DIR)
 
 fclean:
 	@printf "$(_RED)Removing object files and program ...$(_END)\n"
-	@$(RM) $(NAME) $(OBJ_DIR)
+	@$(RM) $(NAME) $(OBJ_DIR) $(OUT_C) $(OUT_H)
 
 re: fclean all
 

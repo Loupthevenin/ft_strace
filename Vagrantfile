@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
   if host_os =~ /darwin/ && host_cpu == "arm64"
     box = "bento/ubuntu-22.04"
   else
-    box = "debian/bullseye64"
+    box = "ubuntu/trusty64"
   end
   provider = "virtualbox"
   puts "🛠️  Vagrant is using provider: #{provider}, with box: #{box}"

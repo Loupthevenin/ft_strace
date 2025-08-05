@@ -33,9 +33,22 @@ static int	is_32_bit(pid_t pid)
 	return (elf_header[4] == 1);
 }
 
+static void	print_syscall_args_64(struct user_regs_struct *regs)
+{
+	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rdi, regs->rsi,
+			regs->rdx, regs->r10, regs->r8, regs->r9);
+}
+
+static void	print_syscall_args_32(struct user_regs_struct *regs)
+{
+	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rbx, regs->rcx,
+			regs->rdx, regs->rsi, regs->rdi, regs->rbp);
+}
+
 static void	loop_trace(pid_t child_pid, int *status)
 {
 	int						in_syscall;
+	int						is_32;
 	struct user_regs_struct	regs;
 	struct iovec			iov;
 	const char				**syscalls;
@@ -43,10 +56,17 @@ static void	loop_trace(pid_t child_pid, int *status)
 	const char				*name;
 
 	in_syscall = 0;
+	is_32 = -1;
 	if (is_32_bit(child_pid))
+	{
 		syscalls = get_syscall_names_32();
+		is_32 = 1;
+	}
 	else
+	{
 		syscalls = get_syscall_names_64();
+		is_32 = 0;
+	}
 	max_syscall = get_max_syscall(syscalls);
 	while (1)
 	{
@@ -72,8 +92,11 @@ static void	loop_trace(pid_t child_pid, int *status)
 			if (!in_syscall)
 			{
 				name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
-				printf("%s(%#llx, %#llx, %#llx", name, regs.rdi, regs.rsi,
-						regs.rdx);
+				printf("%s(", name);
+				if (is_32)
+					print_syscall_args_32(&regs);
+				else
+					print_syscall_args_64(&regs);
 				fflush(stdout);
 				in_syscall = 1;
 			}

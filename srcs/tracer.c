@@ -40,6 +40,7 @@ static void	loop_trace(pid_t child_pid, int *status)
 	struct iovec			iov;
 	const char				**syscalls;
 	int						max_syscall;
+	const char				*name;
 
 	in_syscall = 0;
 	if (is_32_bit(child_pid))
@@ -70,8 +71,9 @@ static void	loop_trace(pid_t child_pid, int *status)
 			}
 			if (!in_syscall)
 			{
-				printf("%s(", get_syscall_name(syscalls, max_syscall,
-							regs.orig_rax));
+				name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
+				printf("%s(%#llx, %#llx, %#llx", name, regs.rdi, regs.rsi,
+						regs.rdx);
 				fflush(stdout);
 				in_syscall = 1;
 			}

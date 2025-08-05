@@ -88,16 +88,26 @@ void	tracer(pid_t child_pid, t_args *args)
 {
 	int	status;
 
-	(void)args;
-	// Attendre le child
-	waitpid(child_pid, &status, 0);
-	if (WIFEXITED(status))
-		return ;
-	// Activer ptrace
-	if (ptrace(PTRACE_SETOPTIONS, child_pid, 0, PTRACE_O_TRACESYSGOOD) == -1)
+	// ON attache au child
+	if (ptrace(PTRACE_SEIZE, child_pid, NULL, PTRACE_O_TRACESYSGOOD) == -1)
 	{
-		perror("ptrace SETOPTIONS");
-		return ;
+		perror("ptrace SEIZE");
+		clean(args);
+		exit(EXIT_FAILURE);
+	}
+	// On met en pause pour le tracing
+	if (ptrace(PTRACE_INTERRUPT, child_pid, NULL, NULL) == -1)
+	{
+		perror("ptrace INERRUPT");
+		clean(args);
+		exit(EXIT_FAILURE);
+	}
+	// Attendre que le process soit stop
+	if (waitpid(child_pid, &status, 0) == -1)
+	{
+		perror("waitpid");
+		clean(args);
+		exit(EXIT_FAILURE);
 	}
 	loop_trace(child_pid, &status);
 }

@@ -50,6 +50,7 @@ static void	exec_cmd(t_args *args)
 void	fork_command(t_args *args)
 {
 	pid_t	child_pid;
+	int		exit_code;
 
 	child_pid = fork();
 	if (child_pid == -1)
@@ -63,7 +64,9 @@ void	fork_command(t_args *args)
 	{
 		g_child_pid = child_pid;
 		signal(SIGINT, sigint_handler);
-		tracer(child_pid, args);
+		exit_code = tracer(child_pid, args);
+		clean(args);
+		exit(exit_code);
 	}
 }
 

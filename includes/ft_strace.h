@@ -26,7 +26,7 @@ typedef struct s_args
 static volatile sig_atomic_t	g_sigint_received;
 
 // Main
-void							tracer(pid_t child_pid, t_args *args);
+int								tracer(pid_t child_pid, t_args *args);
 
 // Utils
 int								get_max_syscall(const char **syscalls);

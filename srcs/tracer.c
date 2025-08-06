@@ -45,6 +45,12 @@ static void	print_syscall_args_32(struct user_regs_struct *regs)
 			regs->rdx, regs->rsi, regs->rdi, regs->rbp);
 }
 
+static int	is_fatal_signal(int sig)
+{
+	return (sig == SIGILL || sig == SIGFPE || sig == SIGSEGV || sig == SIGBUS
+		|| sig == SIGTRAP || sig == SIGSYS);
+}
+
 static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 		const char **syscalls, int max_syscall)
 {
@@ -83,7 +89,7 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 
 static void	handle_signal(pid_t pid)
 {
-	struct siginfo	siginfo;
+	siginfo_t	siginfo;
 
 	// Récupère les infos sur le signal
 	if (ptrace(PTRACE_GETSIGINFO, pid, NULL, &siginfo) == -1)
@@ -95,12 +101,13 @@ static void	handle_signal(pid_t pid)
 			strsignal(siginfo.si_signo));
 }
 
-static void	loop_trace(pid_t child_pid, int *status)
+static int	loop_trace(pid_t child_pid, int *status)
 {
 	int			in_syscall;
 	int			is_32;
 	const char	**syscalls;
 	int			max_syscall;
+	int			sig;
 
 	in_syscall = 0;
 	is_32 = -1;
@@ -119,46 +126,71 @@ static void	loop_trace(pid_t child_pid, int *status)
 	{
 		// Intercepte un syscall;
 		if (ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL) == -1)
+		{
+			perror("ptrace SYSCALL");
 			break ;
+		}
 		// Attend que ca s'arrete;
-		waitpid(child_pid, status, 0);
+		if (waitpid(child_pid, status, 0) == -1)
+			;
+		{
+			perror("waitpid");
+			break ;
+		}
 		// execution terminé;
 		if (WIFEXITED(*status))
-			break ;
+			return (WEXITSTATUS(*status));
+		// Si le processus tué par un signal;
+		if (WIFSIGNALED(*status))
+		{
+			sig = WTERMSIG(*status);
+			fprintf(stderr, "+++ killed by signal %d (%s)\n", sig,
+					strsignal(sig));
+			return (128 + sig);
+		}
 		// bit 7 actif -> arrêt causé par un syscall
 		if (WIFSTOPPED(*status) && (WSTOPSIG(*status) & 0x80))
-			handle_syscall(child_pid, &in_syscall, is_32, syscalls,
-					max_syscall);
+		{
+			sig = WSTOPSIG(*status);
+			if (sig == (SIGTRAP | 0x80))
+				handle_syscall(child_pid, &in_syscall, is_32, syscalls,
+						max_syscall);
+			else if (is_fatal_signal(sig))
+			{
+				fprintf(stderr, "+++ killed by signal %d (%s)\n", sig,
+						strsignal(sig));
+				return (128 + sig);
+			}
+		}
 		// Autre type -> signal
-		else if (WIFSTOPPED(*status))
+		else
 			handle_signal(child_pid);
 	}
+	return (EXIT_FAILURE);
 }
 
-void	tracer(pid_t child_pid, t_args *args)
+int	tracer(pid_t child_pid, t_args *args)
 {
 	int	status;
 
+	(void)args;
 	// ON attache au child
 	if (ptrace(PTRACE_SEIZE, child_pid, NULL, PTRACE_O_TRACESYSGOOD) == -1)
 	{
 		perror("ptrace SEIZE");
-		clean(args);
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 	// On met en pause pour le tracing
 	if (ptrace(PTRACE_INTERRUPT, child_pid, NULL, NULL) == -1)
 	{
 		perror("ptrace INERRUPT");
-		clean(args);
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 	// Attendre que le process soit stop
 	if (waitpid(child_pid, &status, 0) == -1)
 	{
 		perror("waitpid");
-		clean(args);
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
-	loop_trace(child_pid, &status);
+	return (loop_trace(child_pid, &status));
 }

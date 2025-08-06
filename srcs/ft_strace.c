@@ -31,12 +31,38 @@ static t_args	parse_args(int argc, char **argv)
 	return (result);
 }
 
-static void	sigint_handler(int sig)
+static void	sig_handler(int sig)
 {
-	(void)sig;
 	g_sigint_received = 1;
 	if (g_child_pid > 0)
-		kill(g_child_pid, SIGINT);
+		kill(g_child_pid, sig);
+}
+
+static void	setup_signal(t_args *args)
+{
+	struct sigaction	sa;
+
+	sa.sa_handler = sig_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	if (sigaction(SIGINT, &sa, NULL) == -1)
+	{
+		perror("sigaction SIGINT");
+		clean(args);
+		exit(EXIT_FAILURE);
+	}
+	if (sigaction(SIGTERM, &sa, NULL) == -1)
+	{
+		perror("sigaction SIGTERM");
+		clean(args);
+		exit(EXIT_FAILURE);
+	}
+	if (sigaction(SIGQUIT, &sa, NULL) == -1)
+	{
+		perror("sigaction SIGQUIT");
+		clean(args);
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void	exec_cmd(t_args *args)
@@ -63,7 +89,7 @@ void	fork_command(t_args *args)
 	else
 	{
 		g_child_pid = child_pid;
-		signal(SIGINT, sigint_handler);
+		setup_signal(args);
 		exit_code = tracer(child_pid, args);
 		clean(args);
 		exit(exit_code);

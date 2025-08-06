@@ -45,12 +45,6 @@ static void	print_syscall_args_32(struct user_regs_struct *regs)
 			regs->rdx, regs->rsi, regs->rdi, regs->rbp);
 }
 
-static int	is_fatal_signal(int sig)
-{
-	return (sig == SIGILL || sig == SIGFPE || sig == SIGSEGV || sig == SIGBUS
-		|| sig == SIGTRAP || sig == SIGSYS);
-}
-
 static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 		const char **syscalls, int max_syscall)
 {
@@ -97,8 +91,12 @@ static void	handle_signal(pid_t pid)
 		perror("ptrace GETSIGINFO");
 		return ;
 	}
-	printf("--- Signal %d (%s) ---\n", siginfo.si_signo,
-			strsignal(siginfo.si_signo));
+	printf("--- %s {si_signo=%d, si_code=%d, si_pid=%d, si_uid=%d} ---\n",
+			strsignal(siginfo.si_signo),
+			siginfo.si_signo,
+			siginfo.si_code,
+			siginfo.si_pid,
+			siginfo.si_uid);
 }
 
 static int	loop_trace(pid_t child_pid, int *status)
@@ -139,31 +137,42 @@ static int	loop_trace(pid_t child_pid, int *status)
 		// execution terminé;
 		if (WIFEXITED(*status))
 			return (WEXITSTATUS(*status));
-		// Si le processus tué par un signal;
-		if (WIFSIGNALED(*status))
-		{
-			sig = WTERMSIG(*status);
-			fprintf(stderr, "+++ killed by signal %d (%s)\n", sig,
-					strsignal(sig));
-			return (128 + sig);
-		}
-		// bit 7 actif -> arrêt causé par un syscall
-		if (WIFSTOPPED(*status) && (WSTOPSIG(*status) & 0x80))
+		if (WIFSTOPPED(*status))
 		{
 			sig = WSTOPSIG(*status);
+			// Si c'est un syscall
 			if (sig == (SIGTRAP | 0x80))
 				handle_syscall(child_pid, &in_syscall, is_32, syscalls,
 						max_syscall);
-			else if (is_fatal_signal(sig))
+			// Autre type -> signal
+			else
 			{
-				fprintf(stderr, "+++ killed by signal %d (%s)\n", sig,
-						strsignal(sig));
-				return (128 + sig);
+				handle_signal(child_pid);
+				// Reprend avec le signal
+				if (ptrace(PTRACE_SYSCALL, child_pid, NULL, sig) == -1)
+				{
+					perror("ptrace SYSCALL with signal");
+					break ;
+				}
+				// Attend le signal suivant pour vérifier si le processus est mort
+				if (waitpid(child_pid, status, 0) == -1)
+				{
+					perror("waitpid after signal");
+					break ;
+				}
+				// Si le processus est terminé à cause du signal,
+					affiche comme strace
+				if (WIFSIGNALED(*status))
+				{
+					sig = WTERMSIG(*status);
+					fprintf(stderr, "+++ killed by signal %d (%s) +++\n", sig,
+							strsignal(sig));
+					return (128 + sig);
+				}
+				// Sinon, continuer la boucle
+				continue ;
 			}
 		}
-		// Autre type -> signal
-		else
-			handle_signal(child_pid);
 	}
 	return (EXIT_FAILURE);
 }

@@ -22,14 +22,14 @@ static void	print_syscall_args_32(struct user_regs_struct *regs)
 void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 		const char **syscalls, int max_syscall, t_args *args)
 {
-	struct user_regs_structregs;
-	struct ioveciov;
-	const char		*name;
-	struct timespec	end;
-	int				i;
-	long long		duration_ns;
-	int				found;
-	int				syscall_index;
+	struct user_regs_struct	regs;
+	struct iovec			iov;
+	const char				*name;
+	struct timespec			end;
+	int						i;
+	long long				duration_ns;
+	int						found;
+	int						syscall_index;
 
 	syscall_index = -1;
 	iov.iov_base = &regs;
@@ -79,7 +79,6 @@ void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 			else
 				print_syscall_args_64(&regs);
 			fflush(stdout);
-			args->current_syscall_num = regs.orig_rax;
 		}
 		*in_syscall = 1;
 	}

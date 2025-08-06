@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/06 13:54:39 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/06 15:38:19 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,6 +47,7 @@ SRCS = $(SRC_DIR)ft_strace.c \
 OBJS = $(OBJ_DIR)ft_strace.o \
 	   $(OBJ_DIR)utils.o \
 	   $(OBJ_DIR)tracer.o \
+	   $(OBJ_DIR)syscall.o \
 	   $(OBJ_DIR)syscall_names.o
 
 # Recipe

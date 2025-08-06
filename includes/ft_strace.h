@@ -23,7 +23,6 @@ typedef struct s_syscall_stat
 	int							count;
 	int							errors;
 	long long					total_time_ns;
-	struct timespec				start_time;
 }								t_syscall_stat;
 
 typedef struct s_args
@@ -35,6 +34,7 @@ typedef struct s_args
 	int							stats_size;
 	long long					current_syscall_num;
 	struct timespec				stats_start_time;
+	struct timespec				current_start_time;
 }								t_args;
 
 static volatile sig_atomic_t	g_sigint_received;

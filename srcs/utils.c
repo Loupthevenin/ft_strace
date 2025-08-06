@@ -67,6 +67,32 @@ void	print_stats(t_args *args)
 			"", total_calls, total_errors);
 }
 
+int	is_32_bit(pid_t pid)
+{
+	char			path[128];
+	int				fd;
+	unsigned char	elf_header[5];
+
+	snprintf(path, sizeof(path), "/proc/%d/exe", pid);
+	// Lecture binaire;
+	fd = open(path, O_RDONLY);
+	if (fd == -1)
+		return (-1);
+	// Lit les 5 premiers octets du fichier ELF;
+	if (read(fd, elf_header, 5) != 5)
+	{
+		close(fd);
+		return (-1);
+	}
+	close(fd);
+	// Verfie si c'est bien signature ELF;
+	if (elf_header[0] != 0x7f || elf_header[1] != 'E' || elf_header[2] != 'L'
+		|| elf_header[3] != 'F')
+		return (-1);
+	// Le 4 octet indique le format de classe 1 -> 32, 2 -> 64;
+	return (elf_header[4] == 1);
+}
+
 void	clean(t_args *args)
 {
 	if (args->path_bin)

@@ -21,25 +21,10 @@ static void	handle_signal(pid_t pid, t_args *args)
 
 static int	loop_trace(pid_t child_pid, int *status, t_args *args)
 {
-	int			in_syscall;
-	int			is_32;
-	const char	**syscalls;
-	int			max_syscall;
-	int			sig;
+	int	in_syscall;
+	int	sig;
 
 	in_syscall = 0;
-	is_32 = -1;
-	if (is_32_bit(child_pid))
-	{
-		syscalls = get_syscall_names_32();
-		is_32 = 1;
-	}
-	else
-	{
-		syscalls = get_syscall_names_64();
-		is_32 = 0;
-	}
-	max_syscall = get_max_syscall(syscalls);
 	while (1)
 	{
 		// Intercepte un syscall;
@@ -66,8 +51,7 @@ static int	loop_trace(pid_t child_pid, int *status, t_args *args)
 			sig = WSTOPSIG(*status);
 			// Si c'est un syscall
 			if (sig == (SIGTRAP | 0x80))
-				handle_syscall(child_pid, &in_syscall, is_32, syscalls,
-						max_syscall, args);
+				handle_syscall(child_pid, &in_syscall, args);
 			// Autre type -> signal
 			else
 			{

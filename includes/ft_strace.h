@@ -30,6 +30,9 @@ typedef struct s_args
 	char						*path_bin;
 	char						**argv_exec;
 	int							enable_stats;
+	int							is_32;
+	const char					**syscalls;
+	int							max_syscall;
 	t_syscall_stat				*stats;
 	int							stats_size;
 	long long					current_syscall_num;
@@ -42,8 +45,7 @@ static volatile sig_atomic_t	g_sigint_received;
 // Main
 int								tracer(pid_t child_pid, t_args *args);
 void							handle_syscall(pid_t pid, int *in_syscall,
-									int is_32, const char **syscalls,
-									int max_syscall, t_args *args);
+									t_args *args);
 
 // Utils
 int								get_max_syscall(const char **syscalls);

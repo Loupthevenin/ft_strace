@@ -54,6 +54,7 @@ static void	loop_trace(pid_t child_pid, int *status)
 	const char				**syscalls;
 	int						max_syscall;
 	const char				*name;
+	struct siginfo			siginfo;
 
 	in_syscall = 0;
 	is_32 = -1;
@@ -105,6 +106,16 @@ static void	loop_trace(pid_t child_pid, int *status)
 				printf(") = %lld\n", regs.rax);
 				in_syscall = 0;
 			}
+		}
+		else if (WIFSTOPPED(*status))
+		{
+			if (ptrace(PTRACE_GETSIGINFO, child_pid, NULL, &siginfo) == -1)
+			{
+				perror("ptrace GETSIGINFO");
+				return ;
+			}
+			printf("--- Signal %d (%s) ---\n", siginfo.si_signo,
+					strsignal(siginfo.si_signo));
 		}
 	}
 }

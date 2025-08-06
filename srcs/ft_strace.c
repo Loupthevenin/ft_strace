@@ -26,7 +26,7 @@ static t_args	parse_args(int argc, char **argv)
 		fprintf(stderr, "Usage: %s <command> [args...]\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	result.path_bin = strdup(argv[1]);
+	result.path_bin = strdup(argv[i]);
 	result.argv_exec = &argv[i];
 	result.stats = calloc(1024, sizeof(t_syscall_stat));
 	result.stats_size = 0;
@@ -94,7 +94,7 @@ void	fork_command(t_args *args)
 		setup_signal(args);
 		exit_code = tracer(child_pid, args);
 		if (args->enable_stats)
-			print_stats();
+			print_stats(args);
 		clean(args);
 		exit(exit_code);
 	}

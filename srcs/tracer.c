@@ -48,11 +48,15 @@ static void	print_syscall_args_32(struct user_regs_struct *regs)
 static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 		const char **syscalls, int max_syscall, t_args *args)
 {
-	struct user_regs_struct	regs;
-	struct iovec			iov;
-	const char				*name;
-	int						found;
+	struct user_regs_structregs;
+	struct ioveciov;
+	const char		*name;
+	struct timespec	end;
+	int				i;
+	long long		duration_ns;
 
+	intfound;
+	intsyscall_index = -1;
 	iov.iov_base = &regs;
 	iov.iov_len = sizeof(regs);
 	// Récupère les registres -> GETREGSET
@@ -66,10 +70,13 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 	{
 		// Récupère le nom
 		name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
+		args->current_syscall_num = regs.orig_rax;
+		clock_gettime(CLOCK_MONOTONIC, &args->current_start_time);
 		if (args->enable_stats)
 		{
 			found = 0;
-			for (int i = 0; i < args->stats_size; i++)
+			i = 0;
+			while (i < args->stats_size)
 			{
 				if (strcmp(args->stats[i].name, name) == 0)
 				{
@@ -77,12 +84,16 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 					found = 1;
 					break ;
 				}
-				if (!found)
-				{
-					args->stats[args->stats_size].name = name;
-					args->stats[args->stats_size].count = 1;
-					args->stats_size++;
-				}
+				i++;
+			}
+			if (!found)
+			{
+				syscall_index = args->stats_size;
+				args->stats[args->stats_size].name = name;
+				args->stats[args->stats_size].count = 1;
+				args->stats[syscall_index].errors = 0;
+				args->stats[args->stats_size].total_time_ns = 0;
+				args->stats_size++;
 			}
 		}
 		else
@@ -93,13 +104,33 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 			else
 				print_syscall_args_64(&regs);
 			fflush(stdout);
-			*in_syscall = 1;
+			args->current_syscall_num = regs.orig_rax;
 		}
+		*in_syscall = 1;
 	}
 	else
 	{
 		// Sortie de syscall : code de retour
-		if (!args->enable_stats)
+		clock_gettime(CLOCK_MONOTONIC, &end);
+		if (args->enable_stats)
+		{
+			duration_ns = (end.tv_sec - args->current_start_time.tv_sec)
+				* 1000000000LL + (end.tv_nsec
+					- args->current_start_time.tv_nsec);
+			name = get_syscall_name(syscalls, max_syscall,
+					args->current_syscall_num);
+			i = 0;
+			while (i < args->stats_size)
+			{
+				if (strcmp(args->stats[i].name, name) == 0)
+				{
+					args->stats[i].total_time_ns += duration_ns;
+					break ;
+				}
+				i++;
+			}
+		}
+		else
 			printf(") = %lld\n", regs.rax);
 		*in_syscall = 0;
 	}

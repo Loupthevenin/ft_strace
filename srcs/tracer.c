@@ -45,16 +45,58 @@ static void	print_syscall_args_32(struct user_regs_struct *regs)
 			regs->rdx, regs->rsi, regs->rdi, regs->rbp);
 }
 
-static void	loop_trace(pid_t child_pid, int *status)
+static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
+		const char **syscalls, int max_syscall)
 {
-	int						in_syscall;
-	int						is_32;
 	struct user_regs_struct	regs;
 	struct iovec			iov;
-	const char				**syscalls;
-	int						max_syscall;
 	const char				*name;
-	struct siginfo			siginfo;
+
+	// Lecture registres;
+	iov.iov_base = &regs;
+	iov.iov_len = sizeof(regs);
+	if (ptrace(PTRACE_GETREGSET, pid, (void *)NT_PRSTATUS, &iov) == -1)
+	{
+		perror("ptrace GETREGSET");
+		return ;
+	}
+	if (!in_syscall)
+	{
+		name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
+		printf("%s(", name);
+		if (is_32)
+			print_syscall_args_32(&regs);
+		else
+			print_syscall_args_64(&regs);
+		fflush(stdout);
+		*in_syscall = 1;
+	}
+	else
+	{
+		printf(") = %lld\n", regs.rax);
+		*in_syscall = 0;
+	}
+}
+
+static void	handle_signal(pid_t pid)
+{
+	struct siginfo	siginfo;
+
+	if (ptrace(PTRACE_GETSIGINFO, pid, NULL, &siginfo) == -1)
+	{
+		perror("ptrace GETSIGINFO");
+		return ;
+	}
+	printf("--- Signal %d (%s) ---\n", siginfo.si_signo,
+			strsignal(siginfo.si_signo));
+}
+
+static void	loop_trace(pid_t child_pid, int *status)
+{
+	int			in_syscall;
+	int			is_32;
+	const char	**syscalls;
+	int			max_syscall;
 
 	in_syscall = 0;
 	is_32 = -1;
@@ -80,43 +122,10 @@ static void	loop_trace(pid_t child_pid, int *status)
 		if (WIFEXITED(*status))
 			break ;
 		if (WIFSTOPPED(*status) && (WSTOPSIG(*status) & 0x80))
-		{
-			// Lecture registres;
-			iov.iov_base = &regs;
-			iov.iov_len = sizeof(regs);
-			if (ptrace(PTRACE_GETREGSET, child_pid, (void *)NT_PRSTATUS,
-					&iov) == -1)
-			{
-				perror("ptrace GETREGSET");
-				return ;
-			}
-			if (!in_syscall)
-			{
-				name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
-				printf("%s(", name);
-				if (is_32)
-					print_syscall_args_32(&regs);
-				else
-					print_syscall_args_64(&regs);
-				fflush(stdout);
-				in_syscall = 1;
-			}
-			else
-			{
-				printf(") = %lld\n", regs.rax);
-				in_syscall = 0;
-			}
-		}
+			handle_syscall(child_pid, &in_syscall, is_32, syscalls,
+					max_syscall);
 		else if (WIFSTOPPED(*status))
-		{
-			if (ptrace(PTRACE_GETSIGINFO, child_pid, NULL, &siginfo) == -1)
-			{
-				perror("ptrace GETSIGINFO");
-				return ;
-			}
-			printf("--- Signal %d (%s) ---\n", siginfo.si_signo,
-					strsignal(siginfo.si_signo));
-		}
+			handle_signal(child_pid);
 	}
 }
 

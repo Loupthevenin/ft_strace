@@ -16,11 +16,19 @@
 # include <sys/wait.h>
 # include <unistd.h>
 
+typedef struct s_syscall_stat
+{
+	const char					*name;
+	int							count;
+}								t_syscall_stat;
+
 typedef struct s_args
 {
 	char						*path_bin;
 	char						**argv_exec;
 	int							enable_stats;
+	t_syscall_stat				*stats;
+	int							stats_size;
 }								t_args;
 
 static volatile sig_atomic_t	g_sigint_received;
@@ -30,7 +38,7 @@ int								tracer(pid_t child_pid, t_args *args);
 
 // Utils
 int								get_max_syscall(const char **syscalls);
-void							print_stats(void);
+void							print_stats(t_args *args);
 void							clean(t_args *args);
 
 #endif

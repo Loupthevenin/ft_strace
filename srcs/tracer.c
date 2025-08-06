@@ -51,6 +51,7 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 	struct user_regs_struct	regs;
 	struct iovec			iov;
 	const char				*name;
+	int						found;
 
 	iov.iov_base = &regs;
 	iov.iov_len = sizeof(regs);
@@ -63,10 +64,29 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 	// Si on entre dans le syscall
 	if (!*in_syscall)
 	{
-		if (!args->enable_stats)
+		// Récupère le nom
+		name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
+		if (args->enable_stats)
 		{
-			// Récupère le nom
-			name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
+			found = 0;
+			for (int i = 0; i < args->stats_size; i++)
+			{
+				if (strcmp(args->stats[i].name, name) == 0)
+				{
+					args->stats[i].count++;
+					found = 1;
+					break ;
+				}
+				if (!found)
+				{
+					args->stats[args->stats_size].name = name;
+					args->stats[args->stats_size].count = 1;
+					args->stats_size++;
+				}
+			}
+		}
+		else
+		{
 			printf("%s(", name);
 			if (is_32)
 				print_syscall_args_32(&regs);

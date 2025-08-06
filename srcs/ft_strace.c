@@ -28,6 +28,8 @@ static t_args	parse_args(int argc, char **argv)
 	}
 	result.path_bin = strdup(argv[1]);
 	result.argv_exec = &argv[i];
+	result.stats = calloc(1024, sizeof(t_syscall_stat));
+	result.stats_size = 0;
 	return (result);
 }
 

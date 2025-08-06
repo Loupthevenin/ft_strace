@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/04 11:37:40 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/06 13:54:39 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,6 +42,7 @@ DEBUG_FLAGS = -g3
 SRCS = $(SRC_DIR)ft_strace.c \
 	   $(SRC_DIR)utils.c \
 	   $(SRC_DIR)tracer.c \
+	   $(SRC_DIR)syscall.c \
 	   $(SRC_DIR)syscall_names.c
 OBJS = $(OBJ_DIR)ft_strace.o \
 	   $(OBJ_DIR)utils.o \

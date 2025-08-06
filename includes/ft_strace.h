@@ -14,6 +14,7 @@
 # include <sys/uio.h>
 # include <sys/user.h>
 # include <sys/wait.h>
+# include <time.h>
 # include <unistd.h>
 
 typedef struct s_syscall_stat

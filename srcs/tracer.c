@@ -132,7 +132,6 @@ static int	loop_trace(pid_t child_pid, int *status)
 		}
 		// Attend que ca s'arrete;
 		if (waitpid(child_pid, status, 0) == -1)
-			;
 		{
 			perror("waitpid");
 			break ;

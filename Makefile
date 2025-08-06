@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/06 15:38:19 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/06 16:41:13 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,6 +24,10 @@ _END	= \033[0m
 NAME = ft_strace
 SRC_DIR = srcs/
 OBJ_DIR = objs/
+
+TEST_SRC = test/test.c
+TEST_BIN_64 = test64
+TEST_BIN_32 = test32
 
 SYS_SCRIPT = generate_syscall_table.sh
 OUT_C = srcs/syscall_names.c
@@ -69,13 +73,21 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	@$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	@printf "$(_GREEN)█$(_END)"
 
+test64:
+	@$(CC) -m64 -o $(TEST_BIN_64) $(TEST_SRC)
+	@echo "✅ Built 64-bit test binary: $(TEST_BIN_64)"
+
+test32:
+	@$(CC) -m32 -o $(TEST_BIN_32) $(TEST_SRC)
+	@echo "✅ Built 32-bit test binary: $(TEST_BIN_32)"
+
 clean:
 	@printf "$(_YELLOW)Removing object files ...$(_END)\n"
 	@$(RM) $(OBJ_DIR)
 
 fclean:
 	@printf "$(_RED)Removing object files and program ...$(_END)\n"
-	@$(RM) $(NAME) $(OBJ_DIR) $(OUT_C) $(OUT_H)
+	@$(RM) $(NAME) $(OBJ_DIR) $(OUT_C) $(OUT_H) $(TEST_BIN_64) $(TEST_BIN_32)
 
 re: fclean all
 
@@ -87,4 +99,4 @@ leak: CFLAGS += $(DEBUG_FLAGS)
 leak: re
 	@printf "$(_BLUE)Leak check build done$(_END)\n"
 
-.PHONY: all clean fclean re libft debug leak
+.PHONY: all test64 test32 clean fclean re libft debug leak

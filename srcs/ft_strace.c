@@ -1,5 +1,8 @@
 #include "../includes/ft_strace.h"
 
+static pid_t					g_child_pid = -1;
+static volatile sig_atomic_t	g_sigint_received = 0;
+
 static t_args	parse_args(int argc, char **argv)
 {
 	t_args	result;
@@ -28,6 +31,14 @@ static t_args	parse_args(int argc, char **argv)
 	return (result);
 }
 
+static void	sigint_handler(int sig)
+{
+	(void)sig;
+	g_sigint_received = 1;
+	if (g_child_pid > 0)
+		kill(g_child_pid, SIGINT);
+}
+
 static void	exec_cmd(t_args *args)
 {
 	execvp(args->path_bin, args->argv_exec);
@@ -49,7 +60,11 @@ void	fork_command(t_args *args)
 	if (child_pid == 0)
 		exec_cmd(args);
 	else
+	{
+		g_child_pid = child_pid;
+		signal(SIGINT, sigint_handler);
 		tracer(child_pid, args);
+	}
 }
 
 int	main(int argc, char **argv)

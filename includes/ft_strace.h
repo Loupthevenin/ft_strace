@@ -18,16 +18,18 @@
 
 typedef struct s_args
 {
-	char	*path_bin;
-	char	**argv_exec;
-	int		enable_stats;
-}			t_args;
+	char						*path_bin;
+	char						**argv_exec;
+	int							enable_stats;
+}								t_args;
+
+static volatile sig_atomic_t	g_sigint_received;
 
 // Main
-void		tracer(pid_t child_pid, t_args *args);
+void							tracer(pid_t child_pid, t_args *args);
 
 // Utils
-int			get_max_syscall(const char **syscalls);
-void		clean(t_args *args);
+int								get_max_syscall(const char **syscalls);
+void							clean(t_args *args);
 
 #endif

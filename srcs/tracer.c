@@ -56,7 +56,11 @@ static int	loop_trace(pid_t child_pid, int *status, t_args *args)
 		}
 		// execution terminé;
 		if (WIFEXITED(*status))
+		{
+			if (!args->enable_stats)
+				printf("\n");
 			return (WEXITSTATUS(*status));
+		}
 		if (WIFSTOPPED(*status))
 		{
 			sig = WSTOPSIG(*status);

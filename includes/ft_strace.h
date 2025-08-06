@@ -30,6 +30,7 @@ int								tracer(pid_t child_pid, t_args *args);
 
 // Utils
 int								get_max_syscall(const char **syscalls);
+void							print_stats(void);
 void							clean(t_args *args);
 
 #endif

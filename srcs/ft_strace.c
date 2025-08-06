@@ -91,6 +91,8 @@ void	fork_command(t_args *args)
 		g_child_pid = child_pid;
 		setup_signal(args);
 		exit_code = tracer(child_pid, args);
+		if (args->enable_stats)
+			print_stats();
 		clean(args);
 		exit(exit_code);
 	}

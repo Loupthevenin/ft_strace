@@ -46,7 +46,7 @@ static void	print_syscall_args_32(struct user_regs_struct *regs)
 }
 
 static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
-		const char **syscalls, int max_syscall)
+		const char **syscalls, int max_syscall, t_args *args)
 {
 	struct user_regs_struct	regs;
 	struct iovec			iov;
@@ -63,25 +63,29 @@ static void	handle_syscall(pid_t pid, int *in_syscall, int is_32,
 	// Si on entre dans le syscall
 	if (!*in_syscall)
 	{
-		// Récupère le nom
-		name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
-		printf("%s(", name);
-		if (is_32)
-			print_syscall_args_32(&regs);
-		else
-			print_syscall_args_64(&regs);
-		fflush(stdout);
-		*in_syscall = 1;
+		if (!args->enable_stats)
+		{
+			// Récupère le nom
+			name = get_syscall_name(syscalls, max_syscall, regs.orig_rax);
+			printf("%s(", name);
+			if (is_32)
+				print_syscall_args_32(&regs);
+			else
+				print_syscall_args_64(&regs);
+			fflush(stdout);
+			*in_syscall = 1;
+		}
 	}
 	else
 	{
 		// Sortie de syscall : code de retour
-		printf(") = %lld\n", regs.rax);
+		if (!args->enable_stats)
+			printf(") = %lld\n", regs.rax);
 		*in_syscall = 0;
 	}
 }
 
-static void	handle_signal(pid_t pid)
+static void	handle_signal(pid_t pid, t_args *args)
 {
 	siginfo_t	siginfo;
 
@@ -91,15 +95,16 @@ static void	handle_signal(pid_t pid)
 		perror("ptrace GETSIGINFO");
 		return ;
 	}
-	printf("--- %s {si_signo=%d, si_code=%d, si_pid=%d, si_uid=%d} ---\n",
-			strsignal(siginfo.si_signo),
-			siginfo.si_signo,
-			siginfo.si_code,
-			siginfo.si_pid,
-			siginfo.si_uid);
+	if (!args->enable_stats)
+		printf("--- %s {si_signo=%d, si_code=%d, si_pid=%d, si_uid=%d} ---\n",
+				strsignal(siginfo.si_signo),
+				siginfo.si_signo,
+				siginfo.si_code,
+				siginfo.si_pid,
+				siginfo.si_uid);
 }
 
-static int	loop_trace(pid_t child_pid, int *status)
+static int	loop_trace(pid_t child_pid, int *status, t_args *args)
 {
 	int			in_syscall;
 	int			is_32;
@@ -143,11 +148,11 @@ static int	loop_trace(pid_t child_pid, int *status)
 			// Si c'est un syscall
 			if (sig == (SIGTRAP | 0x80))
 				handle_syscall(child_pid, &in_syscall, is_32, syscalls,
-						max_syscall);
+						max_syscall, args);
 			// Autre type -> signal
 			else
 			{
-				handle_signal(child_pid);
+				handle_signal(child_pid, args);
 				// Reprend avec le signal
 				if (ptrace(PTRACE_SYSCALL, child_pid, NULL, sig) == -1)
 				{
@@ -161,7 +166,6 @@ static int	loop_trace(pid_t child_pid, int *status)
 					break ;
 				}
 				// Si le processus est terminé à cause du signal,
-					affiche comme strace
 				if (WIFSIGNALED(*status))
 				{
 					sig = WTERMSIG(*status);
@@ -181,7 +185,6 @@ int	tracer(pid_t child_pid, t_args *args)
 {
 	int	status;
 
-	(void)args;
 	// ON attache au child
 	if (ptrace(PTRACE_SEIZE, child_pid, NULL, PTRACE_O_TRACESYSGOOD) == -1)
 	{
@@ -200,5 +203,5 @@ int	tracer(pid_t child_pid, t_args *args)
 		perror("waitpid");
 		return (EXIT_FAILURE);
 	}
-	return (loop_trace(child_pid, &status));
+	return (loop_trace(child_pid, &status, args));
 }

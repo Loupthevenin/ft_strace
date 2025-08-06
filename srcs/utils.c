@@ -10,6 +10,10 @@ int	get_max_syscall(const char **syscalls)
 	return (count);
 }
 
+void	print_stats(void)
+{
+}
+
 void	clean(t_args *args)
 {
 	if (args->path_bin)

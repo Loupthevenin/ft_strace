@@ -28,16 +28,16 @@ typedef struct s_user_regs_32
 	uint16_t ss, __ss;
 }								t_user_regs;
 
-#  define SYSCALL_NUM regs.orig_eax
-#  define SYSCALL_RET regs.eax
+#  define SYSCALL_NUM regs->orig_eax
+#  define SYSCALL_RET regs->eax
 
 # else
 #  include <sys/user.h>
 
 typedef struct user_regs_struct	t_user_regs;
 
-#  define SYSCALL_NUM regs.orig_rax
-#  define SYSCALL_RET regs.rax
+#  define SYSCALL_NUM regs->orig_rax
+#  define SYSCALL_RET regs->rax
 
 # endif
 

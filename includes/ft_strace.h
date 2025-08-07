@@ -12,19 +12,33 @@
 # include <sys/ptrace.h>
 # include <sys/types.h>
 # include <sys/uio.h>
-# include <sys/user.h>
 # include <sys/wait.h>
 # include <time.h>
 # include <unistd.h>
 
 # ifdef IS_32_BIT
-typedef struct user_regs_struct	t_user_regs;
+
+typedef struct s_user_regs_32
+{
+	uint32_t ebx, ecx, edx, esi, edi, ebp, eax;
+	uint16_t ds, __ds, es, __es, fs, __fs, gs, __gs;
+	uint32_t orig_eax, eip;
+	uint16_t cs, __cs;
+	uint32_t eflags, esp;
+	uint16_t ss, __ss;
+}								t_user_regs;
+
 #  define SYSCALL_NUM regs.orig_eax
 #  define SYSCALL_RET regs.eax
+
 # else
+#  include <sys/user.h>
+
 typedef struct user_regs_struct	t_user_regs;
+
 #  define SYSCALL_NUM regs.orig_rax
 #  define SYSCALL_RET regs.rax
+
 # endif
 
 typedef struct s_syscall_stat

@@ -10,8 +10,13 @@ static const char	*get_syscall_name(const char **syscalls, int max, long id)
 static void	print_syscall_args(t_user_regs *regs)
 {
 #if IS_32_BIT
-	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rbx, regs->rcx,
-			regs->rdx, regs->rsi, regs->rdi, regs->rbp);
+	printf("%#x, %#x, %#x, %#x, %#x, %#x",
+			regs->ebx,
+			regs->ecx,
+			regs->edx,
+			regs->esi,
+			regs->edi,
+			regs->ebp);
 #else
 	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rdi, regs->rsi,
 			regs->rdx, regs->r10, regs->r8, regs->r9);
@@ -54,7 +59,7 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 	{
 		// Récupère le nom
 		name = get_syscall_name(args->syscalls, args->max_syscall, SYSCALL_NUM);
-		args->current_syscall_num = regs.orig_rax;
+		args->current_syscall_num = SYSCALL_NUM;
 		clock_gettime(CLOCK_MONOTONIC, &args->current_start_time);
 		if (args->enable_stats)
 		{

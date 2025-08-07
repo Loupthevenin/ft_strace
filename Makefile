@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/07 09:35:49 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/07 10:16:12 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -74,8 +74,11 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	@printf "$(_GREEN)█$(_END)"
 
 ft_strace32: CFLAGS += -m32 -DIS_32_BIT=1
-ft_strace32:
-	@$(MAKE) NAME=ft_strace32 all
+ft_strace32: $(OUT_C) $(OUT_H) $(OBJS)
+	@printf "$(_END)\nCompiled source files for 32-bit\n"
+	@$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) -o $@
+	@printf "$(_GREEN)Finish compiling ft_strace32!\n"
+	@printf "Try \"./ft_strace32\" to use$(_END)\n"
 
 test64:
 	@$(CC) -m64 -o $(TEST_BIN_64) $(TEST_SRC)

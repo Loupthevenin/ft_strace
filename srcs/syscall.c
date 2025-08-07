@@ -118,6 +118,8 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 {
 	t_user_regs	regs;
 
+	if (get_regs(pid, &regs) == -1)
+		return ;
 	if (!*in_syscall)
 		handle_enter_syscall(&regs, args);
 	else

@@ -1,5 +1,14 @@
 #include "../includes/ft_strace.h"
 
+const char	**get_syscall_names(void)
+{
+#if IS_32_BIT
+	return (get_syscall_names_32());
+#else
+	return (get_syscall_names_64());
+#endif
+}
+
 int	get_max_syscall(const char **syscalls)
 {
 	int	count;
@@ -45,13 +54,22 @@ void	print_stats(t_args *args)
 		if (args->stats[i].count > 0)
 			usec_per_call = args->stats[i].total_time_ns / args->stats[i].count
 				/ 1000;
-		printf("%6.2f %11.6f %11d %9d %9d %s\n",
-				pct,
-				sec,
-				usec_per_call,
-				args->stats[i].count,
-				args->stats[i].errors,
-				args->stats[i].name);
+		if (args->stats[i].errors > 0)
+			printf("%6.2f %11.6f %11d %9d %9d %s\n",
+					pct,
+					sec,
+					usec_per_call,
+					args->stats[i].count,
+					args->stats[i].errors,
+					args->stats[i].name);
+		else
+			printf("%6.2f %11.6f %11d %9d %9s %s\n",
+					pct,
+					sec,
+					usec_per_call,
+					args->stats[i].count,
+					"",
+					args->stats[i].name);
 	}
 	total_calls = 0;
 	total_errors = 0;

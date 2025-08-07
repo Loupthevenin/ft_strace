@@ -23,15 +23,6 @@ static void	print_syscall_args(t_user_regs *regs)
 #endif
 }
 
-const char	**get_syscall_names(void)
-{
-#if IS_32_BIT
-	return (get_syscall_names_32());
-#else
-	return (get_syscall_names_64());
-#endif
-}
-
 void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 {
 	t_user_regs		regs;
@@ -40,14 +31,13 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 	struct timespec	end;
 	int				i;
 	long long		duration_ns;
+	long			ret;
 	int				found;
 	int				syscall_index;
 
 	syscall_index = -1;
 	iov.iov_base = &regs;
 	iov.iov_len = sizeof(regs);
-	args->syscalls = get_syscall_names();
-	args->max_syscall = get_max_syscall(args->syscalls);
 	// Récupère les registres -> GETREGSET
 	if (ptrace(PTRACE_GETREGSET, pid, (void *)NT_PRSTATUS, &iov) == -1)
 	{
@@ -110,6 +100,9 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 				if (strcmp(args->stats[i].name, name) == 0)
 				{
 					args->stats[i].total_time_ns += duration_ns;
+					ret = (long)SYSCALL_RET;
+					if (ret < 0)
+						args->stats[i].errors++;
 					break ;
 				}
 				i++;

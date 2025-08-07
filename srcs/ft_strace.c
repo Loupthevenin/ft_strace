@@ -83,8 +83,8 @@ static t_args	parse_args(int argc, char **argv)
 	result.argv_exec = &argv[i];
 	result.stats = calloc(1024, sizeof(t_syscall_stat));
 	result.stats_size = 0;
-	result.syscalls = NULL;
-	result.max_syscall = -1;
+	result.syscalls = get_syscall_names();
+	result.max_syscall = get_max_syscall(result.syscalls);
 	return (result);
 }
 

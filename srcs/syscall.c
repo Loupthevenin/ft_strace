@@ -33,9 +33,7 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 	long long		duration_ns;
 	long			ret;
 	int				found;
-	int				syscall_index;
 
-	syscall_index = -1;
 	iov.iov_base = &regs;
 	iov.iov_len = sizeof(regs);
 	// Récupère les registres -> GETREGSET
@@ -67,10 +65,9 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 			}
 			if (!found)
 			{
-				syscall_index = args->stats_size;
 				args->stats[args->stats_size].name = name;
 				args->stats[args->stats_size].count = 1;
-				args->stats[syscall_index].errors = 0;
+				args->stats[args->stats_size].errors = 0;
 				args->stats[args->stats_size].total_time_ns = 0;
 				args->stats_size++;
 			}

@@ -30,7 +30,6 @@ typedef struct s_args
 	char						*path_bin;
 	char						**argv_exec;
 	int							enable_stats;
-	int							is_32;
 	const char					**syscalls;
 	int							max_syscall;
 	t_syscall_stat				*stats;

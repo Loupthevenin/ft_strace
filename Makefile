@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/06 16:41:13 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/07 09:24:18 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -73,6 +73,10 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	@$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	@printf "$(_GREEN)█$(_END)"
 
+ft_strace32: CFLAGS += -m32 -DIS_32_BIT=1
+ft_strace32:
+	@(MAKE) NAME=ft_strace32 all
+
 test64:
 	@$(CC) -m64 -o $(TEST_BIN_64) $(TEST_SRC)
 	@echo "✅ Built 64-bit test binary: $(TEST_BIN_64)"
@@ -87,7 +91,7 @@ clean:
 
 fclean:
 	@printf "$(_RED)Removing object files and program ...$(_END)\n"
-	@$(RM) $(NAME) $(OBJ_DIR) $(OUT_C) $(OUT_H) $(TEST_BIN_64) $(TEST_BIN_32)
+	@$(RM) $(NAME) $(OBJ_DIR) $(OUT_C) $(OUT_H) $(TEST_BIN_64) $(TEST_BIN_32) ft_strace32
 
 re: fclean all
 

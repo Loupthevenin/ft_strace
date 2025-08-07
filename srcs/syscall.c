@@ -7,33 +7,24 @@ static const char	*get_syscall_name(const char **syscalls, int max, long id)
 	return ("unknown");
 }
 
-static void	print_syscall_args_64(struct user_regs_struct *regs)
+static void	print_syscall_args(struct user_regs_struct *regs)
 {
-	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rdi, regs->rsi,
-			regs->rdx, regs->r10, regs->r8, regs->r9);
-}
-
-static void	print_syscall_args_32(struct user_regs_struct *regs)
-{
+#if IS_32_BIT
 	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rbx, regs->rcx,
 			regs->rdx, regs->rsi, regs->rdi, regs->rbp);
+#else
+	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rdi, regs->rsi,
+			regs->rdx, regs->r10, regs->r8, regs->r9);
+#endif
 }
 
-static void	detect_archi(t_args *args, pid_t pid)
+const char	**get_syscall_names(void)
 {
-	if (args->is_32 != -1)
-		return ;
-	if (is_32_bit(pid))
-	{
-		args->syscalls = get_syscall_names_32();
-		args->is_32 = 1;
-	}
-	else
-	{
-		args->syscalls = get_syscall_names_64();
-		args->is_32 = 0;
-	}
-	args->max_syscall = get_max_syscall(args->syscalls);
+#if IS_32_BIT
+	return (get_syscall_names_32());
+#else
+	return (get_syscall_names_64());
+#endif
 }
 
 void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
@@ -47,10 +38,11 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 	int						found;
 	int						syscall_index;
 
-	detect_archi(args, pid);
 	syscall_index = -1;
 	iov.iov_base = &regs;
 	iov.iov_len = sizeof(regs);
+	args->syscalls = get_syscall_names();
+	args->max_syscall = get_max_syscall(args->syscalls);
 	// Récupère les registres -> GETREGSET
 	if (ptrace(PTRACE_GETREGSET, pid, (void *)NT_PRSTATUS, &iov) == -1)
 	{
@@ -92,10 +84,7 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 		else
 		{
 			printf("%s(", name);
-			if (args->is_32)
-				print_syscall_args_32(&regs);
-			else
-				print_syscall_args_64(&regs);
+			print_syscall_args(&regs);
 			fflush(stdout);
 		}
 		*in_syscall = 1;

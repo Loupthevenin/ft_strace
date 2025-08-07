@@ -3,10 +3,56 @@
 static pid_t					g_child_pid = -1;
 static volatile sig_atomic_t	g_sigint_received = 0;
 
+static void	check_perm(t_args *args)
+{
+	if (access(args->path_bin, F_OK) == -1)
+	{
+		fprintf(stderr, "%s: No such file or directory\n", args->path_bin);
+		free(args->path_bin);
+		exit(EXIT_FAILURE);
+	}
+	if (access(args->path_bin, X_OK) == -1)
+	{
+		fprintf(stderr, "%s: Permission denied or not executable\n",
+				args->path_bin);
+		free(args->path_bin);
+		exit(EXIT_FAILURE);
+	}
+}
+
+static char	*resolve_exec_path(const char *cmd)
+{
+	char	*path;
+	char	*paths;
+	char	*dir;
+	char	fullpath[2048];
+
+	if (strchr(cmd, '/'))
+		return (strdup(cmd));
+	path = getenv("PATH");
+	if (!path)
+		return (NULL);
+	paths = strdup(path);
+	dir = strtok(paths, ":");
+	while (dir)
+	{
+		snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, cmd);
+		if (access(fullpath, X_OK) == 0)
+		{
+			free(paths);
+			return (strdup(fullpath));
+		}
+		dir = strtok(NULL, ":");
+	}
+	free(paths);
+	return (NULL);
+}
+
 static t_args	parse_args(int argc, char **argv)
 {
 	t_args	result;
 	int		i;
+	char	*str;
 
 	result.enable_stats = 0;
 	i = 1;
@@ -26,7 +72,14 @@ static t_args	parse_args(int argc, char **argv)
 		fprintf(stderr, "Usage: %s <command> [args...]\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	result.path_bin = strdup(argv[i]);
+	str = resolve_exec_path(argv[i]);
+	if (!str)
+	{
+		fprintf(stderr, "%s: command not found\n", argv[i]);
+		exit(EXIT_FAILURE);
+	}
+	result.path_bin = str;
+	check_perm(&result);
 	result.argv_exec = &argv[i];
 	result.stats = calloc(1024, sizeof(t_syscall_stat));
 	result.stats_size = 0;

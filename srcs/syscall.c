@@ -7,7 +7,7 @@ static const char	*get_syscall_name(const char **syscalls, int max, long id)
 	return ("unknown");
 }
 
-static void	print_syscall_args(struct user_regs_struct *regs)
+static void	print_syscall_args(t_user_regs *regs)
 {
 #if IS_32_BIT
 	printf("%#llx, %#llx, %#llx, %#llx, %#llx, %#llx", regs->rbx, regs->rcx,
@@ -29,14 +29,14 @@ const char	**get_syscall_names(void)
 
 void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 {
-	struct user_regs_struct	regs;
-	struct iovec			iov;
-	const char				*name;
-	struct timespec			end;
-	int						i;
-	long long				duration_ns;
-	int						found;
-	int						syscall_index;
+	t_user_regs		regs;
+	struct iovec	iov;
+	const char		*name;
+	struct timespec	end;
+	int				i;
+	long long		duration_ns;
+	int				found;
+	int				syscall_index;
 
 	syscall_index = -1;
 	iov.iov_base = &regs;
@@ -53,8 +53,7 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 	if (!*in_syscall)
 	{
 		// Récupère le nom
-		name = get_syscall_name(args->syscalls, args->max_syscall,
-				regs.orig_rax);
+		name = get_syscall_name(args->syscalls, args->max_syscall, SYSCALL_NUM);
 		args->current_syscall_num = regs.orig_rax;
 		clock_gettime(CLOCK_MONOTONIC, &args->current_start_time);
 		if (args->enable_stats)
@@ -112,7 +111,7 @@ void	handle_syscall(pid_t pid, int *in_syscall, t_args *args)
 			}
 		}
 		else
-			printf(") = %lld\n", regs.rax);
+			printf(") = %lld\n", (long long)SYSCALL_RET);
 		*in_syscall = 0;
 	}
 }

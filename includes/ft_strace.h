@@ -17,6 +17,16 @@
 # include <time.h>
 # include <unistd.h>
 
+# ifdef IS_32_BIT
+typedef struct user_regs_struct	t_user_regs;
+#  define SYSCALL_NUM regs.orig_eax
+#  define SYSCALL_RET regs.eax
+# else
+typedef struct user_regs_struct	t_user_regs;
+#  define SYSCALL_NUM regs.orig_rax
+#  define SYSCALL_RET regs.rax
+# endif
+
 typedef struct s_syscall_stat
 {
 	const char					*name;

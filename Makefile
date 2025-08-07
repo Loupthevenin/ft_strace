@@ -6,7 +6,7 @@
 #    By: ltheveni <ltheveni@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/06 13:57:18 by ltheveni          #+#    #+#              #
-#    Updated: 2025/08/07 09:24:18 by ltheveni         ###   ########.fr        #
+#    Updated: 2025/08/07 09:35:49 by ltheveni         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,7 +75,7 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.c
 
 ft_strace32: CFLAGS += -m32 -DIS_32_BIT=1
 ft_strace32:
-	@(MAKE) NAME=ft_strace32 all
+	@$(MAKE) NAME=ft_strace32 all
 
 test64:
 	@$(CC) -m64 -o $(TEST_BIN_64) $(TEST_SRC)

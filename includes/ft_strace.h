@@ -18,6 +18,7 @@
 
 # ifdef IS_32_BIT
 
+// Représentation des registres pour un processus 32 bits.
 typedef struct s_user_regs_32
 {
 	uint32_t ebx, ecx, edx, esi, edi, ebp, eax;
@@ -36,24 +37,24 @@ typedef struct s_user_regs_32
 
 typedef struct user_regs_struct	t_user_regs;
 
-#  define SYSCALL_NUM regs->orig_rax
-#  define SYSCALL_RET regs->rax
+#  define SYSCALL_NUM regs->orig_rax // Numéro de syscall
+#  define SYSCALL_RET regs->rax      // Valeur de retour du syscall
 
 # endif
 
 typedef struct s_syscall_stat
 {
-	const char					*name;
-	int							count;
-	int							errors;
-	long long					total_time_ns;
+	const char *name;        // Nom du syscall;
+	int count;               // Nombre total d'appel;
+	int errors;              // Nombre d'appel échoué;
+	long long total_time_ns; // temps cumulé passé dans syscall;
 }								t_syscall_stat;
 
 typedef struct s_args
 {
 	char						*path_bin;
 	char						**argv_exec;
-	int							enable_stats;
+	int enable_stats; // -c
 	const char					**syscalls;
 	int							max_syscall;
 	t_syscall_stat				*stats;

@@ -23,13 +23,13 @@ static void	print_syscall_args(t_user_regs *regs)
 #endif
 }
 
+// Récupère les registres du processus via PTRACE_GETREGSET
 static int	get_regs(pid_t pid, t_user_regs *regs)
 {
 	struct iovec	iov;
 
 	iov.iov_base = regs;
 	iov.iov_len = sizeof(*regs);
-	// Récupère les registres -> GETREGSET
 	if (ptrace(PTRACE_GETREGSET, pid, (void *)NT_PRSTATUS, &iov) == -1)
 	{
 		perror("ptrace GETREGSET");
@@ -70,6 +70,7 @@ static void	handle_enter_syscall(t_user_regs *regs, t_args *args)
 	t_syscall_stat	*stat;
 
 	name = get_syscall_name(args->syscalls, args->max_syscall, SYSCALL_NUM);
+	// Stock le numéro pour y accéder à laa sortie
 	args->current_syscall_num = SYSCALL_NUM;
 	clock_gettime(CLOCK_MONOTONIC, &args->current_start_time);
 	if (args->enable_stats)
@@ -80,6 +81,7 @@ static void	handle_enter_syscall(t_user_regs *regs, t_args *args)
 	}
 	else
 	{
+		// Affichage classique;
 		printf("%s(", name);
 		print_syscall_args(regs);
 		fflush(stdout);
@@ -97,6 +99,7 @@ static void	handle_exit_syscall(t_user_regs *regs, t_args *args)
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	if (args->enable_stats)
 	{
+		// Calcul la durée totale de l'appel en nanosecondes
 		duration_ns = (end.tv_sec - args->current_start_time.tv_sec)
 			* 1000000000LL + (end.tv_nsec - args->current_start_time.tv_nsec);
 		name = get_syscall_name(args->syscalls, args->max_syscall,

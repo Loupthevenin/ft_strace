@@ -23,6 +23,9 @@ Vagrant.configure("2") do |config|
       g++ \
       make \
       libc6-dev \
+      libc6-dev-i386 \
+      gcc-multilib \
+      g++-multilib \
       elfutils \
       binutils \
       file \

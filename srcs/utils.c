@@ -1,4 +1,8 @@
 #include "../includes/ft_strace.h"
+#include <signal.h>
+#include <sys/_types/_pid_t.h>
+#include <sys/_types/_sigset_t.h>
+#include <sys/signal.h>
 
 const char	**get_syscall_names(void)
 {
@@ -17,6 +21,32 @@ int	get_max_syscall(const char **syscalls)
 	while (syscalls[count])
 		count++;
 	return (count);
+}
+
+int	safe_waitpid(pid_t pid, int *status)
+{
+	sigset_t	old;
+	sigset_t	blocked;
+	int			ret;
+
+	sigemptyset(&blocked);
+	sigaddset(&blocked, SIGHUP);
+	sigaddset(&blocked, SIGINT);
+	sigaddset(&blocked, SIGQUIT);
+	sigaddset(&blocked, SIGPIPE);
+	sigaddset(&blocked, SIGTERM);
+	if (sigprocmask(SIG_BLOCK, &blocked, &old) == -1)
+	{
+		perror("sigprocmask block");
+		return (-1);
+	}
+	ret = waitpid(pid, status, 0);
+	if (sigprocmask(SIG_SETMASK, &old, NULL) == -1)
+	{
+		perror("sigprocmask restore");
+		return (-1);
+	}
+	return (ret);
 }
 
 static int	compare_stats(const void *a, const void *b)

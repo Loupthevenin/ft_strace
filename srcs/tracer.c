@@ -34,7 +34,7 @@ static int	loop_trace(pid_t child_pid, int *status, t_args *args)
 			break ;
 		}
 		// Attend que ca s'arrete;
-		if (waitpid(child_pid, status, 0) == -1)
+		if (safe_waitpid(child_pid, status) == -1)
 		{
 			perror("waitpid");
 			break ;
@@ -63,7 +63,7 @@ static int	loop_trace(pid_t child_pid, int *status, t_args *args)
 					break ;
 				}
 				// Attend le signal suivant pour vérifier si le processus est mort
-				if (waitpid(child_pid, status, 0) == -1)
+				if (safe_waitpid(child_pid, status) == -1)
 				{
 					perror("waitpid after signal");
 					break ;
@@ -101,7 +101,7 @@ int	tracer(pid_t child_pid, t_args *args)
 		return (EXIT_FAILURE);
 	}
 	// Attendre que le process soit stop
-	if (waitpid(child_pid, &status, 0) == -1)
+	if (safe_waitpid(child_pid, &status) == -1)
 	{
 		perror("waitpid");
 		return (EXIT_FAILURE);

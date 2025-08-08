@@ -74,6 +74,7 @@ void							handle_syscall(pid_t pid, int *in_syscall,
 // Utils
 const char						**get_syscall_names(void);
 int								get_max_syscall(const char **syscalls);
+int								safe_waitpid(pid_t pid, int *status);
 void							print_stats(t_args *args);
 int								is_32_bit(pid_t pid);
 void							clean(t_args *args);

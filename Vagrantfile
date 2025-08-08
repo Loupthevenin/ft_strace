@@ -24,6 +24,7 @@ Vagrant.configure("2") do |config|
       make \
       libc6-dev \
       libc6-dev-i386 \
+      libpthread-stubs0-dev \
       gcc-multilib \
       g++-multilib \
       elfutils \

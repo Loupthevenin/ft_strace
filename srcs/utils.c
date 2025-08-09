@@ -1,8 +1,4 @@
 #include "../includes/ft_strace.h"
-#include <signal.h>
-#include <sys/_types/_pid_t.h>
-#include <sys/_types/_sigset_t.h>
-#include <sys/signal.h>
 
 const char	**get_syscall_names(void)
 {

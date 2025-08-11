@@ -60,6 +60,11 @@ static t_args	parse_args(int argc, char **argv)
 	{
 		if (strcmp(argv[i], "-c") == 0)
 			result.enable_stats = 1;
+		else if (strcmp(argv[i], "--") == 0)
+		{
+			i++;
+			break ;
+		}
 		else
 		{
 			fprintf(stderr, "Unknown option: %s\n", argv[i]);
